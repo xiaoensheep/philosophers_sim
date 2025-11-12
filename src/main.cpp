@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <filesystem>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -111,14 +112,11 @@ GLuint createBillboardVAO(float width, float height) {
 }
 
 // ---------- 加载纹理 ----------
-GLuint loadTexture(const char* path){
+GLuint loadTexture(const std::filesystem::path& path){
     GLuint textureID;
     glGenTextures(1,&textureID);
     glBindTexture(GL_TEXTURE_2D,textureID);
-
-    /* 原实现依赖默认的 unpack 对齐为 4，窄纹理会出现行尾填充导致采样失败
-    // glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    */
+  
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);  // 改为逐字节对齐，保证任意宽度图片正常上传
 
     glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
@@ -128,13 +126,14 @@ GLuint loadTexture(const char* path){
 
     int width,height,nrChannels;
     stbi_set_flip_vertically_on_load(true);
-    unsigned char* data = stbi_load(path,&width,&height,&nrChannels,0);
+    std::string pathStr = path.string();
+    unsigned char* data = stbi_load(pathStr.c_str(),&width,&height,&nrChannels,0);
     if(data){
         GLenum format = (nrChannels==4)?GL_RGBA:GL_RGB;
         glTexImage2D(GL_TEXTURE_2D,0,format,width,height,0,format,GL_UNSIGNED_BYTE,data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
-        std::cerr << "Failed to load texture: " << path << std::endl;
+        std::cerr << "Failed to load texture: " << pathStr << std::endl;
     }
     stbi_image_free(data);
     return textureID;
@@ -182,6 +181,11 @@ void drawText(float x,float y,const std::string &text){
 }
 
 int main(){
+    namespace fs = std::filesystem;
+    const fs::path projectRoot(PROJECT_ROOT);
+    const fs::path shaderDir = projectRoot / "shaders";
+    const fs::path imageDir = projectRoot / "Images";
+
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR,3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR,3);
@@ -198,24 +202,24 @@ int main(){
     }
 
     Shader ourShader(
-    "/home/zxy/Development/OShomeworks/philosophers_sim/shaders/basic.vs",
-    "/home/zxy/Development/OShomeworks/philosophers_sim/shaders/basic.fs"
-);
+        (shaderDir / "basic.vs").string().c_str(),
+        (shaderDir / "basic.fs").string().c_str()
+    );
 
     const int circleSegments = 50;
     GLuint circleVAO = createCircleVAOWithTex(circleSegments,0.08f);
     GLuint rectVAO = createRectangleVAO(0.03f,0.2f);
     GLuint iconVAO = createBillboardVAO(0.18f,0.12f);
 
-    GLuint tableTexture = loadTexture("/home/zxy/Development/OShomeworks/philosophers_sim/Images/table.jpg");
+    GLuint tableTexture = loadTexture(imageDir / "table.jpg");
     std::vector<GLuint> philosopherTextures;
     for(int i=1;i<=5;i++){
         //std::string path = "philosopher" + std::to_string(i) + ".png";
-        std::string path = "/home/zxy/Development/OShomeworks/philosophers_sim/Images/philosopher.jpeg";
-        philosopherTextures.push_back(loadTexture(path.c_str()));
+        philosopherTextures.push_back(loadTexture(imageDir / "philosopher.jpeg"));
     }
-    GLuint thinkingTexture = loadTexture("/home/zxy/Development/OShomeworks/philosophers_sim/Images/thinking.png");
-    GLuint eatingTexture   = loadTexture("/home/zxy/Development/OShomeworks/philosophers_sim/Images/eating.png");
+    GLuint thinkingTexture = loadTexture(imageDir / "thinking.png");
+    GLuint eatingTexture   = loadTexture(imageDir / "eating.png");
+    GLuint hungryTexture    = loadTexture(imageDir / "hungry.png");
 
     PhilosopherManager manager(5);
     manager.start();
@@ -242,22 +246,11 @@ int main(){
         // --- 绘制桌子 ---
         glm::mat4 tableTransform = glm::mat4(1.0f);
         /* 原始桌面尺寸较小，通过缩放矩阵放大整体桌面 */
-        tableTransform = glm::scale(tableTransform, glm::vec3(2.5f,2.5f,1.0f));
+        tableTransform = glm::scale(tableTransform, glm::vec3(5.0f,5.0f,1.0f));
         drawObject(ourShader.ID,circleVAO,tableTransform,false,circleSegments+2,tableTexture);
 
         // --- 绘制筷子 ---
         for(int i=0;i<n;i++){
-            /* 旧实现：仅根据哲学家状态粗略增加半径
-            float angle = 2*M_PI*i/n + M_PI/n;
-            glm::mat4 transform = glm::mat4(1.0f);
-            float chopstickRadius = radius - 0.15f;
-            if(manager.getPhilosopherState(i) == PhilosopherState::EATING ||
-               manager.getPhilosopherState((i+n-1)%n) == PhilosopherState::EATING){
-                chopstickRadius += 0.08f;
-            }
-            transform = glm::rotate(transform,angle,glm::vec3(0,0,1));
-            transform = glm::translate(transform,glm::vec3(0,chopstickRadius,0));
-            */
 
             float angleCurrent = 2*M_PI*i/n;
             float angleNext = 2*M_PI*((i+1)%n)/n;
@@ -305,6 +298,8 @@ int main(){
                 stateTexture = thinkingTexture;
             } else if(state == PhilosopherState::EATING){
                 stateTexture = eatingTexture;
+            }else if(state == PhilosopherState::HUNGRY){
+                stateTexture = hungryTexture;
             }
 
             if(stateTexture != 0){
@@ -327,6 +322,7 @@ int main(){
     glDeleteVertexArrays(1,&iconVAO);
     glDeleteTextures(1,&thinkingTexture);
     glDeleteTextures(1,&eatingTexture);
+    glDeleteTextures(1,&hungryTexture);
 
     glfwTerminate();
     return 0;

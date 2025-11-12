@@ -1,0 +1,3 @@
+/home/zxy/Development/OpenGL/glad/code/build/CMakeFiles/test.dir
+/home/zxy/Development/OpenGL/glad/code/build/CMakeFiles/edit_cache.dir
+/home/zxy/Development/OpenGL/glad/code/build/CMakeFiles/rebuild_cache.dir

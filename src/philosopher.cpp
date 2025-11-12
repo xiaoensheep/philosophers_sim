@@ -13,8 +13,8 @@ Philosopher::Philosopher(int id, int num_philosophers, PhilosopherManager& manag
       running_(false),
       eat_count_(0),
       gen_(rd_()),
-      think_dist_(1000, 5000),  // 思考 3-8s
-      eat_dist_(1000, 3000)     // 进餐 2-5s
+      think_dist_(1000, 5000),  // 思考 s
+      eat_dist_(1000, 3000)     // 进餐 s
 {
 }
 
