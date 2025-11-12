@@ -85,6 +85,8 @@ private:
     std::thread coordinator_;                  // 保存协调线程句柄，便于 stop 时 join
     std::atomic<bool> running_;                // 控制协调线程生命周期
     std::vector<std::atomic<int>> chopstick_owner_;  // 记录筷子持有者
+    std::vector<std::chrono::steady_clock::time_point> hunger_since_;  // 饥饿开始时间
+    std::atomic<int> next_candidate_;           // 追踪下一位优先考虑的哲学家
 };
 
 #endif // PHILOSOPHER_H

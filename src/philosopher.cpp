@@ -89,7 +89,9 @@ void Philosopher::think()
 PhilosopherManager::PhilosopherManager(int num_philosophers)
     : num_philosophers_(num_philosophers),
       running_(false),
-      chopstick_owner_(num_philosophers_)
+      chopstick_owner_(num_philosophers_),
+      hunger_since_(num_philosophers_, std::chrono::steady_clock::time_point{}),
+      next_candidate_(0)
 {
     // 使用 reserve 预分配空间，避免重新分配
     chopsticks_.reserve(num_philosophers_);
@@ -131,35 +133,64 @@ void PhilosopherManager::start()
     coordinator_ = std::thread([this]() {
         while (running_.load(std::memory_order_acquire)) {
             bool hungry_present = false;
+            auto now = std::chrono::steady_clock::now();
 
             for (int i = 0; i < num_philosophers_; ++i) {
-                if (philosophers_[i]->getState() == PhilosopherState::HUNGRY) {
+                PhilosopherState state = philosophers_[i]->getState();
+                if (state == PhilosopherState::HUNGRY) {
                     hungry_present = true;
-
-                    int left = (i + num_philosophers_ - 1) % num_philosophers_;
-                    int right = i;
-
-                    // 服务员算法：占用许可后再尝试拿两支筷子
-                    sem_wait(&waiter_);
-
-                    std::unique_lock<std::mutex> left_lock(*chopsticks_[left], std::try_to_lock);
-                    std::unique_lock<std::mutex> right_lock(*chopsticks_[right], std::try_to_lock);
-
-                    if (left_lock.owns_lock() && right_lock.owns_lock()) {
-                        chopstick_owner_[left].store(i, std::memory_order_release);
-                        chopstick_owner_[right].store(i, std::memory_order_release);
-
-                        philosophers_[i]->eat();
-
-                        chopstick_owner_[left].store(-1, std::memory_order_release);
-                        chopstick_owner_[right].store(-1, std::memory_order_release);
+                    if (hunger_since_[i] == std::chrono::steady_clock::time_point{}) {
+                        hunger_since_[i] = now;
                     }
 
-                    sem_post(&waiter_);
+                    auto waited = now - hunger_since_[i];
+                    if (waited > std::chrono::seconds(10)) {
+                        std::cout << "[WARN] Philosopher " << i << " has been hungry for "
+                                  << std::chrono::duration_cast<std::chrono::seconds>(waited).count()
+                                  << " seconds.\n";
+                        hunger_since_[i] = now;
+                    }
+                } else {
+                    hunger_since_[i] = std::chrono::steady_clock::time_point{};
                 }
             }
 
-            if (!hungry_present) {
+            bool served = false;
+            int start = next_candidate_.load(std::memory_order_relaxed);
+            for (int checked = 0; checked < num_philosophers_ && running_.load(std::memory_order_acquire); ++checked) {
+                int i = (start + checked) % num_philosophers_;
+                if (philosophers_[i]->getState() != PhilosopherState::HUNGRY) {
+                    continue;
+                }
+
+                int left = (i + num_philosophers_ - 1) % num_philosophers_;
+                int right = i;
+
+                // 服务员算法：占用许可后再尝试拿两支筷子
+                sem_wait(&waiter_);
+
+                std::mutex& left_mutex = *chopsticks_[left];
+                std::mutex& right_mutex = *chopsticks_[right];
+                {
+                    std::scoped_lock lock(left_mutex, right_mutex);
+
+                    chopstick_owner_[left].store(i, std::memory_order_release);
+                    chopstick_owner_[right].store(i, std::memory_order_release);
+
+                    philosophers_[i]->eat();
+
+                    chopstick_owner_[left].store(-1, std::memory_order_release);
+                    chopstick_owner_[right].store(-1, std::memory_order_release);
+                }
+
+                served = true;
+                next_candidate_.store((i + 1) % num_philosophers_, std::memory_order_release);
+
+                sem_post(&waiter_);
+                break;
+            }
+
+            if (!hungry_present || !served) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(10));
             }
         }
@@ -180,6 +211,9 @@ void PhilosopherManager::stop()
 
     for (auto& owner : chopstick_owner_) {
         owner.store(-1, std::memory_order_release);
+    }
+    for (auto& ts : hunger_since_) {
+        ts = std::chrono::steady_clock::time_point{};
     }
 }
 
