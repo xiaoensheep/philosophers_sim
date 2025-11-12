@@ -5,10 +5,13 @@
 #include <mutex>
 #include <atomic>
 #include <vector>
-#include <chrono>
 #include <random>
 #include <semaphore.h>
 #include <memory>
+#include <utility>
+#include <chrono>
+
+class PhilosopherManager;
 
 // 哲学家状态枚举
 enum class PhilosopherState {
@@ -20,7 +23,7 @@ enum class PhilosopherState {
 // 哲学家类
 class Philosopher {
 public:
-    Philosopher(int id, int num_philosophers);
+    Philosopher(int id, int num_philosophers, PhilosopherManager& manager);
     ~Philosopher();
     
     // 禁止拷贝和移动
@@ -39,9 +42,10 @@ public:
 private:
     void run();    // 线程主函数
     void think();  // 思考方法
-    
+
     int id_;                          // 哲学家ID
     int num_philosophers_;            // 哲学家总数
+    PhilosopherManager& manager_;     // 管理器引用
     std::thread thread_;              // 哲学家线程
     std::atomic<PhilosopherState> state_;  // 原子状态变量
     std::atomic<bool> running_;       // 运行标志
@@ -71,22 +75,81 @@ public:
     PhilosopherState getPhilosopherState(int id) const;  // 获取哲学家状态
     int getPhilosopherEatCount(int id) const;           // 获取进餐次数
     int getNumPhilosophers() const;                     // 获取哲学家数量
-    int getChopstickOwner(int idx) const;               // 获取某根筷子当前持有者，-1 表示空闲
+    int getChopstickOwner(int idx) const;               // 获取某根筷子的持有者
+
+    struct ChopstickGuard;
+    ChopstickGuard acquireChopsticks(int id);
 
 private:
     std::vector<std::unique_ptr<Philosopher>> philosophers_;  // 使用智能指针
     std::vector<std::unique_ptr<std::mutex>> chopsticks_;     // 使用智能指针
     sem_t waiter_;                                            // 服务员信号量
     int num_philosophers_;                                    // 哲学家数量
+    std::vector<std::atomic<int>> chopstick_owner_;           // 记录筷子持有者
 
-    /* 原错误实现：协调线程是局部变量并立即 detach
-    std::thread coordinator;
-    */
-    std::thread coordinator_;                  // 保存协调线程句柄，便于 stop 时 join
-    std::atomic<bool> running_;                // 控制协调线程生命周期
-    std::vector<std::atomic<int>> chopstick_owner_;  // 记录筷子持有者
-    std::vector<std::chrono::steady_clock::time_point> hunger_since_;  // 饥饿开始时间
-    std::atomic<int> next_candidate_;           // 追踪下一位优先考虑的哲学家
+    void releaseChopsticksInternal(int owner, int left, int right);
+};
+
+struct PhilosopherManager::ChopstickGuard {
+    std::unique_lock<std::mutex> left_lock;
+    std::unique_lock<std::mutex> right_lock;
+    PhilosopherManager* manager;
+    int owner;
+    int left_idx;
+    int right_idx;
+
+    ChopstickGuard(std::unique_lock<std::mutex>&& left,
+                   std::unique_lock<std::mutex>&& right,
+                   PhilosopherManager* mgr,
+                   int owner_id,
+                   int left_index,
+                   int right_index)
+        : left_lock(std::move(left)),
+          right_lock(std::move(right)),
+          manager(mgr),
+          owner(owner_id),
+          left_idx(left_index),
+          right_idx(right_index)
+    {}
+
+    ChopstickGuard(ChopstickGuard&& other) noexcept
+        : left_lock(std::move(other.left_lock)),
+          right_lock(std::move(other.right_lock)),
+          manager(other.manager),
+          owner(other.owner),
+          left_idx(other.left_idx),
+          right_idx(other.right_idx)
+    {
+        other.manager = nullptr;
+    }
+
+    ChopstickGuard& operator=(ChopstickGuard&& other) noexcept
+    {
+        if (this != &other) {
+            release();
+            left_lock = std::move(other.left_lock);
+            right_lock = std::move(other.right_lock);
+            manager = other.manager;
+            owner = other.owner;
+            left_idx = other.left_idx;
+            right_idx = other.right_idx;
+            other.manager = nullptr;
+        }
+        return *this;
+    }
+
+    ~ChopstickGuard() { release(); }
+
+    void release()
+    {
+        if (manager) {
+            manager->releaseChopsticksInternal(owner, left_idx, right_idx);
+            manager = nullptr;
+        }
+    }
+
+    ChopstickGuard(const ChopstickGuard&) = delete;
+    ChopstickGuard& operator=(const ChopstickGuard&) = delete;
 };
 
 #endif // PHILOSOPHER_H

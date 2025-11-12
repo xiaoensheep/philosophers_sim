@@ -5,9 +5,10 @@
 #include <memory>
 #include <thread>
 
-Philosopher::Philosopher(int id, int num_philosophers)
+Philosopher::Philosopher(int id, int num_philosophers, PhilosopherManager& manager)
     : id_(id),
       num_philosophers_(num_philosophers),
+      manager_(manager),
       state_(PhilosopherState::THINKING),
       running_(false),
       eat_count_(0),
@@ -70,11 +71,8 @@ void Philosopher::run()
 
         state_ = PhilosopherState::HUNGRY;
 
-        // 短暂等待，让管理器有机会处理
-        while (running_.load(std::memory_order_acquire) &&
-               state_.load(std::memory_order_acquire) != PhilosopherState::THINKING) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        }
+        auto guard = manager_.acquireChopsticks(id_);
+        eat();
     }
 }
 
@@ -88,10 +86,7 @@ void Philosopher::think()
 // PhilosopherManager 实现
 PhilosopherManager::PhilosopherManager(int num_philosophers)
     : num_philosophers_(num_philosophers),
-      running_(false),
-      chopstick_owner_(num_philosophers_),
-      hunger_since_(num_philosophers_, std::chrono::steady_clock::time_point{}),
-      next_candidate_(0)
+      chopstick_owner_(num_philosophers_)
 {
     // 使用 reserve 预分配空间，避免重新分配
     chopsticks_.reserve(num_philosophers_);
@@ -104,7 +99,7 @@ PhilosopherManager::PhilosopherManager(int num_philosophers)
     // 创建哲学家对象
     philosophers_.reserve(num_philosophers_);
     for (int i = 0; i < num_philosophers_; ++i) {
-        philosophers_.push_back(std::make_unique<Philosopher>(i, num_philosophers_));
+        philosophers_.push_back(std::make_unique<Philosopher>(i, num_philosophers_, *this));
     }
 
     for (auto& owner : chopstick_owner_) {
@@ -124,96 +119,16 @@ void PhilosopherManager::start()
         philosopher->start();
     }
 
-    /* 原错误实现：局部线程 + detach，会在未检测到活动时立刻退出
-    std::thread coordinator([this]() { ... });
-    coordinator.detach();
-    */
-
-    running_.store(true, std::memory_order_release);
-    coordinator_ = std::thread([this]() {
-        while (running_.load(std::memory_order_acquire)) {
-            bool hungry_present = false;
-            auto now = std::chrono::steady_clock::now();
-
-            for (int i = 0; i < num_philosophers_; ++i) {
-                PhilosopherState state = philosophers_[i]->getState();
-                if (state == PhilosopherState::HUNGRY) {
-                    hungry_present = true;
-                    if (hunger_since_[i] == std::chrono::steady_clock::time_point{}) {
-                        hunger_since_[i] = now;
-                    }
-
-                    auto waited = now - hunger_since_[i];
-                    if (waited > std::chrono::seconds(10)) {
-                        std::cout << "[WARN] Philosopher " << i << " has been hungry for "
-                                  << std::chrono::duration_cast<std::chrono::seconds>(waited).count()
-                                  << " seconds.\n";
-                        hunger_since_[i] = now;
-                    }
-                } else {
-                    hunger_since_[i] = std::chrono::steady_clock::time_point{};
-                }
-            }
-
-            bool served = false;
-            int start = next_candidate_.load(std::memory_order_relaxed);
-            for (int checked = 0; checked < num_philosophers_ && running_.load(std::memory_order_acquire); ++checked) {
-                int i = (start + checked) % num_philosophers_;
-                if (philosophers_[i]->getState() != PhilosopherState::HUNGRY) {
-                    continue;
-                }
-
-                int left = (i + num_philosophers_ - 1) % num_philosophers_;
-                int right = i;
-
-                // 服务员算法：占用许可后再尝试拿两支筷子
-                sem_wait(&waiter_);
-
-                std::mutex& left_mutex = *chopsticks_[left];
-                std::mutex& right_mutex = *chopsticks_[right];
-                {
-                    std::scoped_lock lock(left_mutex, right_mutex);
-
-                    chopstick_owner_[left].store(i, std::memory_order_release);
-                    chopstick_owner_[right].store(i, std::memory_order_release);
-
-                    philosophers_[i]->eat();
-
-                    chopstick_owner_[left].store(-1, std::memory_order_release);
-                    chopstick_owner_[right].store(-1, std::memory_order_release);
-                }
-
-                served = true;
-                next_candidate_.store((i + 1) % num_philosophers_, std::memory_order_release);
-
-                sem_post(&waiter_);
-                break;
-            }
-
-            if (!hungry_present || !served) {
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            }
-        }
-    });
 }
 
 void PhilosopherManager::stop()
 {
-    running_.store(false, std::memory_order_release);
-
-    if (coordinator_.joinable()) {
-        coordinator_.join();
-    }
-
     for (auto& philosopher : philosophers_) {
         philosopher->stop();
     }
 
     for (auto& owner : chopstick_owner_) {
         owner.store(-1, std::memory_order_release);
-    }
-    for (auto& ts : hunger_since_) {
-        ts = std::chrono::steady_clock::time_point{};
     }
 }
 
@@ -244,4 +159,28 @@ int PhilosopherManager::getChopstickOwner(int idx) const
         return chopstick_owner_[idx].load(std::memory_order_acquire);
     }
     return -1;
+}
+
+PhilosopherManager::ChopstickGuard PhilosopherManager::acquireChopsticks(int id)
+{
+    int left = (id + num_philosophers_ - 1) % num_philosophers_;
+    int right = id;
+
+    sem_wait(&waiter_);
+
+    std::unique_lock<std::mutex> left_lock(*chopsticks_[left], std::defer_lock);
+    std::unique_lock<std::mutex> right_lock(*chopsticks_[right], std::defer_lock);
+    std::lock(left_lock, right_lock);
+
+    chopstick_owner_[left].store(id, std::memory_order_release);
+    chopstick_owner_[right].store(id, std::memory_order_release);
+
+    return ChopstickGuard(std::move(left_lock), std::move(right_lock), this, id, left, right);
+}
+
+void PhilosopherManager::releaseChopsticksInternal(int owner, int left, int right)
+{
+    chopstick_owner_[left].store(-1, std::memory_order_release);
+    chopstick_owner_[right].store(-1, std::memory_order_release);
+    sem_post(&waiter_);
 }
