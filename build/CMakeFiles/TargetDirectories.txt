@@ -1,0 +1,3 @@
+/home/zxy/Development/OShomeworks/philosophers_sim/build/CMakeFiles/philosophers.dir
+/home/zxy/Development/OShomeworks/philosophers_sim/build/CMakeFiles/edit_cache.dir
+/home/zxy/Development/OShomeworks/philosophers_sim/build/CMakeFiles/rebuild_cache.dir

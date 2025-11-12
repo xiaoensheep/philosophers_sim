@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/philosophers.dir/src/main.cpp.o CMakeFiles/philosophers.dir/src/philosopher.cpp.o CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o -o philosophers  /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libGLU.so /usr/local/lib/libglfw3.a /usr/lib/x86_64-linux-gnu/librt.a -lm -ldl 
