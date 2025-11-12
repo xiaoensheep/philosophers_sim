@@ -129,29 +129,29 @@ philosophers/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/philosophers.dir/build.make CMakeFiles/philosophers.dir/build
 .PHONY : philosophers/fast
 
-home/zxy/Development/OpenGL/glad/src/glad.o: home/zxy/Development/OpenGL/glad/src/glad.c.o
-.PHONY : home/zxy/Development/OpenGL/glad/src/glad.o
+glad/src/glad.o: glad/src/glad.c.o
+.PHONY : glad/src/glad.o
 
 # target to build an object file
-home/zxy/Development/OpenGL/glad/src/glad.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/philosophers.dir/build.make CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o
-.PHONY : home/zxy/Development/OpenGL/glad/src/glad.c.o
+glad/src/glad.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/philosophers.dir/build.make CMakeFiles/philosophers.dir/glad/src/glad.c.o
+.PHONY : glad/src/glad.c.o
 
-home/zxy/Development/OpenGL/glad/src/glad.i: home/zxy/Development/OpenGL/glad/src/glad.c.i
-.PHONY : home/zxy/Development/OpenGL/glad/src/glad.i
+glad/src/glad.i: glad/src/glad.c.i
+.PHONY : glad/src/glad.i
 
 # target to preprocess a source file
-home/zxy/Development/OpenGL/glad/src/glad.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/philosophers.dir/build.make CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.i
-.PHONY : home/zxy/Development/OpenGL/glad/src/glad.c.i
+glad/src/glad.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/philosophers.dir/build.make CMakeFiles/philosophers.dir/glad/src/glad.c.i
+.PHONY : glad/src/glad.c.i
 
-home/zxy/Development/OpenGL/glad/src/glad.s: home/zxy/Development/OpenGL/glad/src/glad.c.s
-.PHONY : home/zxy/Development/OpenGL/glad/src/glad.s
+glad/src/glad.s: glad/src/glad.c.s
+.PHONY : glad/src/glad.s
 
 # target to generate assembly for a file
-home/zxy/Development/OpenGL/glad/src/glad.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/philosophers.dir/build.make CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.s
-.PHONY : home/zxy/Development/OpenGL/glad/src/glad.c.s
+glad/src/glad.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/philosophers.dir/build.make CMakeFiles/philosophers.dir/glad/src/glad.c.s
+.PHONY : glad/src/glad.c.s
 
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
@@ -210,9 +210,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... philosophers"
-	@echo "... home/zxy/Development/OpenGL/glad/src/glad.o"
-	@echo "... home/zxy/Development/OpenGL/glad/src/glad.i"
-	@echo "... home/zxy/Development/OpenGL/glad/src/glad.s"
+	@echo "... glad/src/glad.o"
+	@echo "... glad/src/glad.i"
+	@echo "... glad/src/glad.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

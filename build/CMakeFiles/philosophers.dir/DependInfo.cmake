@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/zxy/Development/OpenGL/glad/src/glad.c" "CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o" "gcc" "CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o.d"
+  "/home/zxy/Development/OShomeworks/philosophers_sim/glad/src/glad.c" "CMakeFiles/philosophers.dir/glad/src/glad.c.o" "gcc" "CMakeFiles/philosophers.dir/glad/src/glad.c.o.d"
   "/home/zxy/Development/OShomeworks/philosophers_sim/src/main.cpp" "CMakeFiles/philosophers.dir/src/main.cpp.o" "gcc" "CMakeFiles/philosophers.dir/src/main.cpp.o.d"
   "/home/zxy/Development/OShomeworks/philosophers_sim/src/philosopher.cpp" "CMakeFiles/philosophers.dir/src/philosopher.cpp.o" "gcc" "CMakeFiles/philosophers.dir/src/philosopher.cpp.o.d"
   )

@@ -97,32 +97,32 @@ CMakeFiles/philosophers.dir/src/philosopher.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/philosophers.dir/src/philosopher.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/zxy/Development/OShomeworks/philosophers_sim/src/philosopher.cpp -o CMakeFiles/philosophers.dir/src/philosopher.cpp.s
 
-CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o: CMakeFiles/philosophers.dir/flags.make
-CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o: /home/zxy/Development/OpenGL/glad/src/glad.c
-CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o: CMakeFiles/philosophers.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zxy/Development/OShomeworks/philosophers_sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o -MF CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o.d -o CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o -c /home/zxy/Development/OpenGL/glad/src/glad.c
+CMakeFiles/philosophers.dir/glad/src/glad.c.o: CMakeFiles/philosophers.dir/flags.make
+CMakeFiles/philosophers.dir/glad/src/glad.c.o: /home/zxy/Development/OShomeworks/philosophers_sim/glad/src/glad.c
+CMakeFiles/philosophers.dir/glad/src/glad.c.o: CMakeFiles/philosophers.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/zxy/Development/OShomeworks/philosophers_sim/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/philosophers.dir/glad/src/glad.c.o"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/philosophers.dir/glad/src/glad.c.o -MF CMakeFiles/philosophers.dir/glad/src/glad.c.o.d -o CMakeFiles/philosophers.dir/glad/src/glad.c.o -c /home/zxy/Development/OShomeworks/philosophers_sim/glad/src/glad.c
 
-CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.i"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/zxy/Development/OpenGL/glad/src/glad.c > CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.i
+CMakeFiles/philosophers.dir/glad/src/glad.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/philosophers.dir/glad/src/glad.c.i"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /home/zxy/Development/OShomeworks/philosophers_sim/glad/src/glad.c > CMakeFiles/philosophers.dir/glad/src/glad.c.i
 
-CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.s"
-	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/zxy/Development/OpenGL/glad/src/glad.c -o CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.s
+CMakeFiles/philosophers.dir/glad/src/glad.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/philosophers.dir/glad/src/glad.c.s"
+	/usr/bin/cc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /home/zxy/Development/OShomeworks/philosophers_sim/glad/src/glad.c -o CMakeFiles/philosophers.dir/glad/src/glad.c.s
 
 # Object files for target philosophers
 philosophers_OBJECTS = \
 "CMakeFiles/philosophers.dir/src/main.cpp.o" \
 "CMakeFiles/philosophers.dir/src/philosopher.cpp.o" \
-"CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o"
+"CMakeFiles/philosophers.dir/glad/src/glad.c.o"
 
 # External object files for target philosophers
 philosophers_EXTERNAL_OBJECTS =
 
 philosophers: CMakeFiles/philosophers.dir/src/main.cpp.o
 philosophers: CMakeFiles/philosophers.dir/src/philosopher.cpp.o
-philosophers: CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o
+philosophers: CMakeFiles/philosophers.dir/glad/src/glad.c.o
 philosophers: CMakeFiles/philosophers.dir/build.make
 philosophers: /usr/lib/x86_64-linux-gnu/libGL.so
 philosophers: /usr/lib/x86_64-linux-gnu/libGLU.so

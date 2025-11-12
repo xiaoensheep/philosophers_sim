@@ -3,15 +3,15 @@
 
 # compile C with /usr/bin/cc
 # compile CXX with /usr/bin/c++
-C_DEFINES = 
+C_DEFINES = -DPROJECT_ROOT=\"/home/zxy/Development/OShomeworks/philosophers_sim\"
 
-C_INCLUDES = -I/home/zxy/Development/OpenGL/glm-1.0.2 -I/home/zxy/Development/OShomeworks/philosophers_sim/inc
+C_INCLUDES = -I/home/zxy/Development/OShomeworks/philosophers_sim/glad/include -I/home/zxy/Development/OShomeworks/philosophers_sim/inc -I/home/zxy/Development/OShomeworks/philosophers_sim/glm-1.0.2
 
 C_FLAGS = 
 
-CXX_DEFINES = 
+CXX_DEFINES = -DPROJECT_ROOT=\"/home/zxy/Development/OShomeworks/philosophers_sim\"
 
-CXX_INCLUDES = -I/home/zxy/Development/OpenGL/glm-1.0.2 -I/home/zxy/Development/OShomeworks/philosophers_sim/inc
+CXX_INCLUDES = -I/home/zxy/Development/OShomeworks/philosophers_sim/glad/include -I/home/zxy/Development/OShomeworks/philosophers_sim/inc -I/home/zxy/Development/OShomeworks/philosophers_sim/glm-1.0.2
 
 CXX_FLAGS = -std=gnu++17
 

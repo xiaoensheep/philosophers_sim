@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o"
-  "CMakeFiles/philosophers.dir/home/zxy/Development/OpenGL/glad/src/glad.c.o.d"
+  "CMakeFiles/philosophers.dir/glad/src/glad.c.o"
+  "CMakeFiles/philosophers.dir/glad/src/glad.c.o.d"
   "CMakeFiles/philosophers.dir/src/main.cpp.o"
   "CMakeFiles/philosophers.dir/src/main.cpp.o.d"
   "CMakeFiles/philosophers.dir/src/philosopher.cpp.o"
